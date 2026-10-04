@@ -32,14 +32,14 @@ int BASE_ROW;
 char *COL_BAK_BAR = COL_BAK_BLUE;
 char *COL_BAK_MENU_MSG = COL_BAK_RESET;
 int COL_ENABLED = 1;
-char *COL_FOR_ARROW = COL_FOR_BOLD_RED;
-char *COL_FOR_BAR = COL_FOR_BOLD_WHITE;
-char *COL_FOR_CODE = COL_FOR_BOLD_RED;
-char *COL_FOR_CURSOR = COL_FOR_BOLD_CYAN;
-char *COL_FOR_HEADING = COL_FOR_BOLD_CYAN;
+char *COL_FOR_ARROW = COL_FOR_BRIGHT_RED;
+char *COL_FOR_BAR = COL_FOR_BRIGHT_WHITE;
+char *COL_FOR_CODE = COL_FOR_BRIGHT_RED;
+char *COL_FOR_CURSOR = COL_FOR_BRIGHT_CYAN;
+char *COL_FOR_HEADING = COL_FOR_BRIGHT_CYAN;
 char *COL_FOR_MENU_MSG = COL_FOR_CYAN;
 char *COL_FOR_OL = COL_FOR_GREEN;
-char *COL_FOR_SHORKUTIL = COL_FOR_BOLD_MAGENTA;
+char *COL_FOR_SHORKUTIL = COL_FOR_BRIGHT_MAGENTA;
 int COMPACT = 0;
 char CURSOR_CHAR = '*';
 char *EXIT_MSG = NULL;
@@ -250,6 +250,7 @@ void onExit(void)
  */
 void onSigInt(int sig)
 {
+    (void)sig;
     exit(0);
 }
 
@@ -389,9 +390,8 @@ void printFooter(char *footnote)
         for (int i = 0; i < TERM_SIZE.ws_col; i++)
             putchar(SEPARATOR);
         printf("\033[%d;1H", TERM_SIZE.ws_row);
-        int len = 0;
         if (footnote)
-            len = printf("%s", footnote);
+            printf("%s", footnote);
     }
 }
 
@@ -578,9 +578,6 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
     // cursorPrev is initialised as 0 to indicate first frame should be drawn
     if (*cursorYPrev == 0) inScrolling = 1;
 
-    int prevIndex = *cursorYPrev - 1;
-    int currIndex = *cursorY - 1;
-
     // If we don't need to scroll, just update the cursor
     if (!inScrolling)
     {
@@ -736,6 +733,9 @@ void printTextScreen(char *title, char *text, int totalLines, int pageScroll)
             case QUIT:
                 running = 0;
                 break;
+
+            default:
+                break;
         }
     }
 }
@@ -749,8 +749,8 @@ int printYesNoScreen(char *title, char *prompt)
 {
     const int menuSize = 2;
     MenuItem menu[2] = {
-        { "yes",    "Yes",  "", NULL,   1 },
-        { "no",     "No",   "", NULL,   1 }
+        { "yes",    "Yes",  "", NULL,   1,  0 },
+        { "no",     "No",   "", NULL,   1,  0 }
     };
 
     int running = 1;
@@ -812,6 +812,7 @@ int printYesNoScreen(char *title, char *prompt)
                 break;
 
             case INVALID:
+            default:
                 fullRedraw = 0;
                 break;
         }
