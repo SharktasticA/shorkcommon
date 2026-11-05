@@ -834,7 +834,11 @@ int rowsInCol(int menuSize, int rows, int col)
     return rows;
 }
 
-void setupMenuSys(void)
+/**
+ * @param cols Minimum number of text display columns to accept
+ * @param rows Minimum number of text display rows to accept
+ */
+void setupMenuSys(const int cols, const int rows)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
     atexit(onExit);
@@ -853,15 +857,22 @@ void setupMenuSys(void)
     enableRawMode();
     clearScreen();
     printf("\033[?25l");
-    setupViewport();
+    setupViewport(cols, rows);
 }
 
-void setupViewport(void)
+/**
+ * @param cols Minimum number of text display columns to accept
+ * @param rows Minimum number of text display rows to accept
+ */
+void setupViewport(const int cols, const int rows)
 {
     TERM_SIZE = getTerminalSize();
-    if (TERM_SIZE.ws_col < 40 || TERM_SIZE.ws_row < 10)
+    if (TERM_SIZE.ws_col < cols || TERM_SIZE.ws_row < rows)
     {
-        EXIT_MSG = "ERROR: terminal size too small (must be 40x10 or larger)\n";
+        size_t extMsgLen = 100;
+        EXIT_MSG = malloc(extMsgLen);
+        snprintf(EXIT_MSG, extMsgLen, "ERROR: terminal size too small "
+            "(must be %dx%d or larger)", cols, rows);
         exit(1);
     }
 
