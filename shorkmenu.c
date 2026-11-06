@@ -218,7 +218,24 @@ NavInput getNavInput(void)
  */
 void markEntry(char *name, const char *col, const int noAst)
 {
-    if (name[0] == '\x1b' || (!noAst && name[0] == '*'))
+    // Without an asterisk, a leading escape means it's already coloured
+    if (noAst && name[0] == '\x1b')
+        return;
+
+    // Skip any leading ANSI escape sequences
+    const char *text = name;
+    while (text[0] == '\x1b' && text[1] == '[')
+    {
+        const char *end = text + 2;
+        while (*end && !(*end >= '@' && *end <= '~'))
+            end++;
+        if (!*end)
+            break;
+        text = end + 1;
+    }
+
+    // Already marked with an asterisk
+    if (!noAst && text[0] == '*')
         return;
     
     char buffer[MENU_ITEM_NAME_LEN];
