@@ -78,8 +78,8 @@ void disableRawMode(void)
 }
 
 /**
- * Disables the terminal's canonical input so that things like getchar do not
- * wait until enter is pressed.
+ * Disables the terminal's canonical input so that things like getchar do
+ * not wait until enter is pressed.
  */
 void enableRawMode(void)
 {
@@ -105,9 +105,12 @@ void freeMenu(MenuItem* menu, int size)
 /**
  * Gets an integer input from the user.
  * @param prompt Prompt to give the user 
- * @param min Minimum allowed input (set to same as max to disable validation)
- * @param max Maximum allowed input (set to same as min to disable validation)
- * @param negativeIfInvalid Flags if function should return -1 if invalid input instead of looping
+ * @param min Minimum allowed input (set to same as max to disable
+ *            validation)
+ * @param max Maximum allowed input (set to same as min to disable
+ *            validation)
+ * @param negativeIfInvalid Flags if function should return -1 if invalid
+ *                          input instead of looping
  * @return User's integer input
  */
 int getIntInput(char *prompt, int min, int max, int negativeIfInvalid)
@@ -229,8 +232,8 @@ void markEntry(char *name, const char *col, const int noAst)
 }
 
 /**
- * Makes the terminal cursor visible again, resets the terminal's colours and clears the screen
- * upon exiting.
+ * Makes the terminal cursor visible again, resets the terminal's colours
+ * and clears the screen upon exiting.
  */
 void onExit(void)
 {
@@ -255,13 +258,51 @@ void onSigInt(int sig)
 }
 
 /**
+ * A standardised single-byte characater input prompt screen.
+ * @param title Title text
+ * @param text Prompt text
+ * @return 1 = yes; 0 = no; -1 = error
+ */
+int printCharInputScreen(char *title, char *prompt)
+{
+    int input;
+
+    do
+    {
+        clearScreen();
+        printHeader(title);
+        printf("\n%s\n", prompt);
+        printFooter("[Any key] Input [Enter] Cancel");
+
+        input = getchar();
+
+        // Return = cancel
+        if (input == '\n' || input == '\r' || input == EOF)
+            return -1;
+
+        // Swallow rest of an escape sequence so it isn't read as separate
+        // characters
+        if (input == 27)
+        {
+            getchar();
+            getchar();
+            input = 0;
+        }
+    } while (!isprint(input));
+
+    return input;
+}
+
+/**
  * Prints a directory listing.
- * @param dirContents Pointer to one or more dirent structs for each file in the current directory
+ * @param dirContents Pointer to one or more dirent structs for each file in
+ *                    the current directory
  * @param entryCount Number of entries in current directory
  * @param cursor Current line cursor position
  * @param cursorPrev Previous line cursor position
  */
-void printDir(struct dirent **dirContents, int entryCount, int cursor, int cursorPrev)
+void printDir(struct dirent **dirContents, int entryCount, int cursor,
+    int cursorPrev)
 {
     // If directory is empty
     if (!dirContents || entryCount == 0)
@@ -274,19 +315,26 @@ void printDir(struct dirent **dirContents, int entryCount, int cursor, int curso
 
     // Viewport offset and clamping for current line cursor
     int offset = (cursor - 1) - (AVAIL_HEIGHT / 2);
-    if (offset < 0) offset = 0;
-    if (offset > entryCount - AVAIL_HEIGHT) offset = entryCount - AVAIL_HEIGHT;
-    if (offset < 0) offset = 0;
+    if (offset < 0)
+        offset = 0;
+    if (offset > entryCount - AVAIL_HEIGHT)
+        offset = entryCount - AVAIL_HEIGHT;
+    if (offset < 0)
+        offset = 0;
 
     // Viewport offset and clamping for previous line cursor
     int prevOffset = (cursorPrev - 1) - (AVAIL_HEIGHT / 2);
-    if (prevOffset < 0) prevOffset = 0;
-    if (prevOffset > entryCount - AVAIL_HEIGHT) prevOffset = entryCount - AVAIL_HEIGHT;
-    if (prevOffset < 0) prevOffset = 0;
+    if (prevOffset < 0)
+        prevOffset = 0;
+    if (prevOffset > entryCount - AVAIL_HEIGHT)
+        prevOffset = entryCount - AVAIL_HEIGHT;
+    if (prevOffset < 0)
+        prevOffset = 0;
 
     int inScrolling = (prevOffset != offset);
 
-    // cursorPrev is initialised as 0 to indicate first frame should be drawn
+    // cursorPrev is initialised as 0 to indicate first frame should be
+    // drawn
     if (cursorPrev == 0) inScrolling = 1;
 
     int prevIndex = cursorPrev - 1;
@@ -303,7 +351,8 @@ void printDir(struct dirent **dirContents, int entryCount, int cursor, int curso
 
         // Print new line cursor
         if (COL_ENABLED)
-            printf("\x1b[%d;1H \033[%sm%c\033[%sm ", rowCurr, COL_FOR_CURSOR, CURSOR_CHAR, COL_RESET);
+            printf("\x1b[%d;1H \033[%sm%c\033[%sm ", rowCurr,
+                COL_FOR_CURSOR, CURSOR_CHAR, COL_RESET);
         else
             printf("\x1b[%d;1H %c ", rowCurr, CURSOR_CHAR);
 
@@ -336,7 +385,8 @@ void printDir(struct dirent **dirContents, int entryCount, int cursor, int curso
         if (canGoUp && i == offset)
         {
             if (COL_ENABLED)
-                printf("\033[%sm^\033[%sm\x1b[K\n", COL_FOR_ARROW, COL_RESET);
+                printf("\033[%sm^\033[%sm\x1b[K\n", COL_FOR_ARROW,
+                    COL_RESET);
             else
                 printf("^\x1b[K\n");
         }
@@ -352,9 +402,11 @@ void printDir(struct dirent **dirContents, int entryCount, int cursor, int curso
         else if (i == currIndex)
         {
             if (COL_ENABLED)
-                printf(" \033[%sm%c\033[%sm %c %s\n", COL_FOR_CURSOR, CURSOR_CHAR, COL_RESET, prefix, dirContents[i]->d_name);
+                printf(" \033[%sm%c\033[%sm %c %s\n", COL_FOR_CURSOR,
+                    CURSOR_CHAR, COL_RESET, prefix, dirContents[i]->d_name);
             else
-                printf(" %c %c %s\n", CURSOR_CHAR, prefix, dirContents[i]->d_name);
+                printf(" %c %c %s\n", CURSOR_CHAR, prefix,
+                    dirContents[i]->d_name);
         }
         // Other lines
         else
@@ -436,30 +488,37 @@ void printHeader(char *title)
  * @param menuSize How many items are in the menu
  * @param msg Optional essage to display at the top of the message
  * @param cols Number of columns to draw
- * @param colWidth How many characters are in a column (excluding the cursor indicator)
+ * @param colWidth How many characters are in a column (excluding the cursor
+ *                 indicator)
  * @param rows Number of rows to draw
  * @param cursorX Current column cursor position
  * @param cursorY Current row cursor position
  * @param cursorXPrev Previous column cursor position
  * @param cursorYPrev Previous row cursor position
  */
-void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, int rows, int *cursorX, int *cursorY, int *cursorXPrev, int *cursorYPrev)
+void printMenu(MenuItem *menu, int menuSize, char *msg, int cols,
+    int colWidth, int rows, int *cursorX, int *cursorY, int *cursorXPrev,
+    int *cursorYPrev)
 {
     // If a menu item is static, we need to skip the cursor over it
     if (menu[(*cursorX + *cursorY) - 2].isStatic)
     {
         // Going up
-        if (*cursorYPrev > 0 && *cursorY < *cursorYPrev && !(*cursorYPrev == rows && *cursorXPrev == cols && *cursorY == 1))
+        if (*cursorYPrev > 0 && *cursorY < *cursorYPrev &&
+            !(*cursorYPrev == rows && *cursorXPrev == cols &&
+                *cursorY == 1))
         {
             // Decrement the cursor until we reach something non-static
-            while (*cursorY > 0 && menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
+            while (*cursorY > 0 &&
+                menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
                 (*cursorY)--;
 
             // If the cursor is now out of bounds, wrap around and try again
             if (*cursorY < 1)
             {
                 *cursorY = rows;
-                while (*cursorY > 0 && menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
+                while (*cursorY > 0 &&
+                    menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
                     (*cursorY)--;
             }
         }
@@ -467,14 +526,16 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
         else
         {
             // Increment the cursor until we reach something non-static
-            while (*cursorY <= rows && menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
+            while (*cursorY <= rows &&
+                menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
                 (*cursorY)++;
 
             // If the cursor is now out of bounds, wrap around and try again
             if (*cursorY > rows)
             {
                 *cursorY = 1;
-                while (*cursorY <= rows && menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
+                while (*cursorY <= rows &&
+                    menu[(*cursorX - 1) * rows + *cursorY - 1].isStatic)
                     (*cursorY)++;
             }
         }
@@ -575,7 +636,8 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
 
     int inScrolling = (prevOffset != offset);
 
-    // cursorPrev is initialised as 0 to indicate first frame should be drawn
+    // cursorPrev is initialised as 0 to indicate first frame should be
+    // drawn
     if (*cursorYPrev == 0) inScrolling = 1;
 
     // If we don't need to scroll, just update the cursor
@@ -590,7 +652,8 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
         int currCol = 1 + (*cursorX - 1) * (colWidth + 3);
         int currRow = adjustedBaseRow + (*cursorY - 1 - offset);
         if (COL_ENABLED)
-            printf("\x1b[%d;%dH \033[%sm%c\033[%sm ", currRow, currCol, COL_FOR_CURSOR, CURSOR_CHAR, COL_RESET);
+            printf("\x1b[%d;%dH \033[%sm%c\033[%sm ", currRow, currCol,
+                COL_FOR_CURSOR, CURSOR_CHAR, COL_RESET);
         else
             printf("\x1b[%d;%dH %c ", currRow, currCol, CURSOR_CHAR);
         
@@ -603,7 +666,8 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
     int canGoDown = (offset + adjustedAvailHeight) < rows;
     int linesPrinted = 0;
 
-    for (int i = offset; i < rows && linesPrinted < adjustedAvailHeight; i++)
+    for (int i = offset; i < rows && linesPrinted < adjustedAvailHeight;
+        i++)
     {
         printf("\x1b[%d;1H\x1b[K", adjustedBaseRow + linesPrinted);
 
@@ -611,7 +675,8 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
         if (canGoUp && i == offset)
         {
             if (COL_ENABLED)
-                printf("\033[%sm^\033[%sm\x1b[K\n", COL_FOR_ARROW, COL_RESET);
+                printf("\033[%sm^\033[%sm\x1b[K\n", COL_FOR_ARROW,
+                    COL_RESET);
             else
                 printf("^\n");
         }
@@ -634,16 +699,20 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
                     if (menu[cursor].isStatic)
                     {
                         if (COL_ENABLED)
-                            printf("\033[%sm%-*s\033[%sm", COL_FOR_HEADING, colWidth + 3, menu[cursor].name, COL_RESET);
+                            printf("\033[%sm%-*s\033[%sm", COL_FOR_HEADING,
+                                colWidth + 3, menu[cursor].name, COL_RESET);
                         else
                             printf("%-*s", colWidth + 3, menu[cursor].name);
                     }
                     else if (j + 1 == *cursorX && i + 1 == *cursorY)
                     {
                         if (COL_ENABLED)
-                            printf(" \033[%sm%c\033[%sm %-*s", COL_FOR_CURSOR, CURSOR_CHAR, COL_RESET, colWidth, menu[cursor].name);
+                            printf(" \033[%sm%c\033[%sm %-*s",
+                                COL_FOR_CURSOR, CURSOR_CHAR, COL_RESET,
+                                colWidth, menu[cursor].name);
                         else
-                            printf(" %c %-*s", CURSOR_CHAR, colWidth, menu[cursor].name);
+                            printf(" %c %-*s", CURSOR_CHAR, colWidth,
+                                menu[cursor].name);
                     }
                     else
                         printf("   %-*s", colWidth, menu[cursor].name);
@@ -663,12 +732,15 @@ void printMenu(MenuItem *menu, int menuSize, char *msg, int cols, int colWidth, 
 }
 
 /**
- * @param title Header's text string
- * @param text Text for the main body
+ * A standardised text prompt screen.
+ * @param title Title text
+ * @param text Main body text
  * @param totalLines How many newlines are present in main body text
- * @param pageScroll Flags if scrolling should be page based instead of line-by-line
+ * @param pageScroll Flags if scrolling should be page based instead of
+ *                   line-by-line
  */
-void printTextScreen(char *title, char *text, int totalLines, int pageScroll)
+void printTextScreen(char *title, char *text, int totalLines,
+    int pageScroll)
 {
     clearScreen();
     printHeader(title);
@@ -698,14 +770,16 @@ void printTextScreen(char *title, char *text, int totalLines, int pageScroll)
             if (canGoUp && i == 0)
             {
                 if (COL_ENABLED)
-                    printf("\033[%sm^\033[%sm\x1b[K\n", COL_FOR_ARROW, COL_RESET);
+                    printf("\033[%sm^\033[%sm\x1b[K\n", COL_FOR_ARROW,
+                        COL_RESET);
                 else
                     printf("^\x1b[K\n");
             }
             else if (canGoDown && i == AVAIL_HEIGHT - 1)
             {
                 if (COL_ENABLED)
-                    printf("\033[%smv\033[%sm\x1b[K\n", COL_FOR_ARROW, COL_RESET);
+                    printf("\033[%smv\033[%sm\x1b[K\n", COL_FOR_ARROW,
+                        COL_RESET);
                 else
                     printf("v\x1b[K\n");
             }
@@ -741,8 +815,9 @@ void printTextScreen(char *title, char *text, int totalLines, int pageScroll)
 }
 
 /**
- * @param title Header's text string
- * @param text Text for the main body
+ * A standardised yes or no prompt screen.
+ * @param title Title text
+ * @param text Prompt text
  * @return 1 = yes; 0 = no; -1 = error
  */
 int printYesNoScreen(char *title, char *prompt)
@@ -766,7 +841,8 @@ int printYesNoScreen(char *title, char *prompt)
         {
             clearScreen();
             printHeader(title);
-            printMenu(menu, menuSize, prompt, 1, TERM_SIZE.ws_col - 6, menuSize, &cursorX, &cursorY, &cursorXPrev, &cursorYPrev);
+            printMenu(menu, menuSize, prompt, 1, TERM_SIZE.ws_col - 6,
+                menuSize, &cursorX, &cursorY, &cursorXPrev, &cursorYPrev);
             printFooter("[jk] Navigate [Enter] Select [q] Cancel");
         }
         else
@@ -775,7 +851,8 @@ int printYesNoScreen(char *title, char *prompt)
                 printf("\x1b[2;1H");
             else
                 printf("\x1b[3;1H");
-            printMenu(menu, menuSize, prompt, 1, TERM_SIZE.ws_col - 6, menuSize, &cursorX, &cursorY, &cursorXPrev, &cursorYPrev);
+            printMenu(menu, menuSize, prompt, 1, TERM_SIZE.ws_col - 6,
+                menuSize, &cursorX, &cursorY, &cursorXPrev, &cursorYPrev);
         }
 
         NavInput input = getNavInput();
@@ -823,7 +900,8 @@ int printYesNoScreen(char *title, char *prompt)
 }
 
 /**
- * Gets how many valid rows there are in the current menu column. Used to help clamp menu cursors.
+ * Gets how many valid rows there are in the current menu column. Used to
+ * help clamp menu cursors.
  */
 int rowsInCol(int menuSize, int rows, int col)
 {

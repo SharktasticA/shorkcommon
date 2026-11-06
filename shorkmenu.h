@@ -82,6 +82,7 @@ NavInput getNavInput(void);
 void markEntry(char*, const char*, const int);
 void onExit(void);
 void onSigInt(int);
+int printCharInputScreen(char*, char*);
 void printDir(struct dirent**, int, int, int);
 void printFooter(char*);
 void printHeader(char*);
