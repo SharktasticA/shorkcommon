@@ -1211,8 +1211,12 @@ char *removeBrackets(const char *input, const int inputSize)
         }
         else if (*src == ')')
         {
-            if (depth > 0)
-                depth--;
+            if (depth > 0 && --depth == 0)
+            {
+                if (*(src + 1) == ' ' && (dst == result ||
+                    *(dst - 1) == ' '))
+                    src++;
+            }
             src++;
         }
         else if (depth == 0)
@@ -1220,6 +1224,8 @@ char *removeBrackets(const char *input, const int inputSize)
         else
             src++;
     }
+    if (dst > result && *(dst - 1) == ' ')
+        dst--;
     *dst = '\0';
 
     return result;
