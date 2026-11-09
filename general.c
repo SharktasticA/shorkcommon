@@ -476,8 +476,8 @@ char *extractFromPoint(char *input, int inputSize, char point)
     result[inputSize - 1] = '\0';
     int len = strlen(result);
 
-    // Trim potential trailing newline 
-    if (len > 0 && result[len - 1] == '\n')
+    // Trim potential trailing newline and/or carriage return
+    while (len > 0 && (result[len - 1] == '\n' || result[len - 1] == '\r'))
         result[--len] = '\0';
 
     // Trim potential trailing double quote
