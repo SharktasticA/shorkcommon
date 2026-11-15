@@ -1161,6 +1161,30 @@ int procExists(const char *name, const int strict)
 }
 
 /**
+ * Reads a file at the given path into the given buffer.
+ * @param path Path to file to read
+ * @param buffer Buffer to write into
+ * @param bufferSize Size of buffer
+ * @return 0 if success; -1 if failure/empty
+ */
+int readFile(const char *path, char *buffer, const int bufferSize)
+{
+    FILE *fStream = fopen(path, "r");
+    if (!fStream)
+        return -1;
+
+    if (!fgets(buffer, bufferSize, fStream))
+    {
+        fclose(fStream);
+        return -1;
+    }
+    fclose(fStream);
+
+    buffer[strcspn(buffer, "\r\n")] = '\0';
+    return buffer[0] ? 0 : -1;
+}
+
+/**
  * Reads a single hexadecimal number for a given text file.
  * @param path Path to file to open
  * @return The read number as an integer (0 as fallback)
@@ -1168,9 +1192,12 @@ int procExists(const char *name, const int strict)
 int readHexFile(const char *path)
 {
     FILE *fStream = fopen(path, "r");
-    if (!fStream) return 0;
+    if (!fStream)
+        return 0;
+
     int val;
-    if (fscanf(fStream, "%x", &val) != 1) val = 0;
+    if (fscanf(fStream, "%x", &val) != 1)
+        val = 0;
     fclose(fStream);
     return val;
 }
